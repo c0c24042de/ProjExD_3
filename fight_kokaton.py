@@ -84,6 +84,30 @@ class Bird:
             self.img = __class__.imgs[tuple(sum_mv)]
         screen.blit(self.img, self.rct)
 
+class Score:
+    """
+    スコア表示を担当するクラス
+    """
+    def __init__(self):
+        self.score = 0
+        self.fonto = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
+        self.color = (0, 0, 255)  # 青
+        self.img = self.fonto.render(f"Score: {self.score}", True, self.color)
+        self.rct = self.img.get_rect()
+        self.rct.bottomleft = (100, HEIGHT - 50)
+
+    def update(self, screen: pg.Surface):
+        """
+        スコアを画面左下に表示する
+        """
+        self.img = self.fonto.render(f"Score: {self.score}", True, self.color)
+        screen.blit(self.img, self.rct)
+
+    def add(self, point: int = 1):
+        """
+        スコアを加算する（デフォルト+1点）
+        """
+        self.score += point
 
 class Beam:
     """
@@ -147,6 +171,7 @@ def main():
     bg_img = pg.image.load("fig/pg_bg.jpg")
     bird = Bird((300, 200))
     bomb = Bomb((255, 0, 0), 10)
+    score = Score()
     bombs = []  # 爆弾用の空のリスト
     # for _ in range(NUM_OF_BOMBS):
     #     bombs.append(Bomb((255, 0, 0), 10))
@@ -162,6 +187,15 @@ def main():
              # スペースキー押下でBeamクラスのインスタンス生成
                 beam = Beam(bird)            
         screen.blit(bg_img, [0, 0])
+
+        for i, bomb in enumerate(bombs):
+            if beam is not None:
+                if beam.rct.colliderect(bomb.rct):  # ビームと爆弾が衝突していたら
+                    beam = None
+                    bombs[i] = None
+                    score.add(1)  # ★ここで1点加算
+                    bird.change_img(6, screen)
+        score.update(screen)  # スコア表示
         
         if bomb is not None:
             if bird.rct.colliderect(bomb.rct):
